@@ -82,7 +82,7 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 // ==============================
-// SERVER (Azure MUST use this)
+// SERVER
 // ==============================
 const PORT = process.env.PORT || 5000;
 
