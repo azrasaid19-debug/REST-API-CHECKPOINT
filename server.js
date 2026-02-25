@@ -1,30 +1,34 @@
 // ==============================
 // IMPORTS
 // ==============================
+
+// Import express to create the server
 const express = require("express");
+
+// Import mongoose to interact with MongoDB
 const mongoose = require("mongoose");
+
+// Import dotenv to use environment variables from .env file
 require("dotenv").config({ path: "./config/.env" });
+
+// Import User model
 const User = require("./models/User");
 
+// Create express app
 const app = express();
 
-// Middleware to read JSON
+// Middleware to parse JSON data from requests
 app.use(express.json());
 
 // ==============================
-// CONNECT TO MONGODB ATLAS
+// CONNECT TO MONGODB
 // ==============================
+
+// Connect using the URI stored in .env file
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ DB Error:", err));
-
-// ==============================
-// ROOT ROUTE (IMPORTANT FOR AZURE)
-// ==============================
-app.get("/", (req, res) => {
-  res.send("🚀 API is running on Azure!");
-});
+  .catch((err) => console.log("❌ Connection Error:", err));
 
 // ==============================
 // ROUTES
@@ -43,25 +47,15 @@ app.get("/users", async (req, res) => {
 });
 
 /*
-POST : ADD NEW USER
+POST : ADD A NEW USER TO DATABASE
 */
-
 app.post("/users", async (req, res) => {
   try {
-    console.log("📩 Incoming Body:", req.body); // see what Postman sends
-
-    const newUser = new User({
-      name: req.body.name,
-      email: req.body.email,
-      age: req.body.age,
-    });
-
+    const newUser = new User(req.body);
     const savedUser = await newUser.save();
-
-    res.status(201).json(savedUser);
+    res.json(savedUser);
   } catch (err) {
-    console.error("❌ REAL ERROR:", err.message); // show actual problem
-    res.status(500).json({ error: err.message });
+    res.status(400).send("Error creating user");
   }
 });
 
@@ -70,9 +64,12 @@ PUT : EDIT USER BY ID
 */
 app.put("/users/:id", async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }, // return updated document
+    );
+
     res.json(updatedUser);
   } catch (err) {
     res.status(400).send("Error updating user");
@@ -85,15 +82,17 @@ DELETE : REMOVE USER BY ID
 app.delete("/users/:id", async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
-    res.send("✅ User deleted");
+    res.send("User deleted successfully");
   } catch (err) {
     res.status(400).send("Error deleting user");
   }
 });
 
 // ==============================
-// SERVER
+// START SERVER
 // ==============================
+
+// Use PORT from .env or default to 5000
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
