@@ -20,6 +20,13 @@ mongoose
   .catch((err) => console.log("❌ DB Error:", err));
 
 // ==============================
+// ROOT ROUTE (IMPORTANT FOR AZURE)
+// ==============================
+app.get("/", (req, res) => {
+  res.send("🚀 API is running on Azure!");
+});
+
+// ==============================
 // ROUTES
 // ==============================
 
@@ -75,7 +82,7 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 // ==============================
-// SERVER
+// SERVER (Azure MUST use this)
 // ==============================
 const PORT = process.env.PORT || 5000;
 
