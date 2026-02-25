@@ -45,13 +45,23 @@ app.get("/users", async (req, res) => {
 /*
 POST : ADD NEW USER
 */
+
 app.post("/users", async (req, res) => {
   try {
-    const newUser = new User(req.body);
+    console.log("📩 Incoming Body:", req.body); // see what Postman sends
+
+    const newUser = new User({
+      name: req.body.name,
+      email: req.body.email,
+      age: req.body.age,
+    });
+
     const savedUser = await newUser.save();
-    res.json(savedUser);
+
+    res.status(201).json(savedUser);
   } catch (err) {
-    res.status(400).send("Error creating user");
+    console.error("❌ REAL ERROR:", err.message); // show actual problem
+    res.status(500).json({ error: err.message });
   }
 });
 
